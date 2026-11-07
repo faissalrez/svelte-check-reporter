@@ -44,4 +44,18 @@ describe('svelte-check-reporter', () => {
     expect(result.status).toBe(2)
     expect(result.stderr).toContain('Missing --output-file')
   })
+
+  it('prints GitHub annotations with --format github', () => {
+    const result = spawnSync('node', [cli, '--format', 'github'], { input: [start, error, warning, completed].join('\n'), encoding: 'utf8' })
+    expect(result.status).toBe(1)
+    expect(result.stdout).toContain('::error file=src/a.ts,line=1,col=5,endLine=1,endColumn=6,title=svelte-check(2322)::Boom.')
+    expect(result.stdout).toContain('::warning file=src/b.svelte,line=2,col=1,')
+    expect(result.stdout).toContain('1 error, 1 warning')
+  })
+
+  it('rejects --output-file with --format github', () => {
+    const result = spawnSync('node', [cli, '--format', 'github', '--output-file', 'x.json'], { input: '', encoding: 'utf8' })
+    expect(result.status).toBe(2)
+    expect(result.stderr).toContain('--output-file is only for --format gitlab')
+  })
 })

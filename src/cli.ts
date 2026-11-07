@@ -4,10 +4,12 @@ import { dirname } from 'node:path'
 import { text } from 'node:stream/consumers'
 import { parseArgs } from 'node:util'
 
+import { toAnnotations } from './github.js'
 import { toCodeQuality } from './gitlab.js'
 import { parse, type Diagnostic } from './parse.js'
 
-const usage = 'Usage: svelte-check --output machine-verbose | svelte-check-reporter --format gitlab --output-file gl-codequality.json'
+const usage = 'Usage: svelte-check --output machine-verbose | svelte-check-reporter --format gitlab --output-file gl-codequality.json\n' +
+  '   or: svelte-check --output machine-verbose | svelte-check-reporter --format github'
 
 async function main (): Promise<number> {
   // No `default` in these options: parseArgs only supports it from Node 18.11
@@ -19,9 +21,12 @@ async function main (): Promise<number> {
     }
   })
   const reportFormat = values.format ?? 'gitlab'
-  if (reportFormat !== 'gitlab') throw new Error(`Unknown format "${reportFormat}". ${usage}`)
+  if (reportFormat !== 'gitlab' && reportFormat !== 'github') throw new Error(`Unknown format "${reportFormat}". ${usage}`)
   const outputFile = values['output-file']
-  if (!outputFile) throw new Error(`Missing --output-file. ${usage}`)
+  // GitHub reads its annotations from the log: only GitLab's report goes to a file
+  if (reportFormat === 'gitlab' && !outputFile) throw new Error(`Missing --output-file. ${usage}`)
+  if (reportFormat === 'github' && outputFile) throw new Error(`--output-file is only for --format gitlab. ${usage}`)
+  const prefix = values.prefix ?? ''
 
   // Otherwise it would wait for keyboard input, and look stuck
   if (process.stdin.isTTY) throw new Error(`Nothing piped in. ${usage}`)
@@ -30,8 +35,13 @@ async function main (): Promise<number> {
   if (!/^\d+ COMPLETED /m.test(output)) throw new Error(`No complete svelte-check output on stdin. ${usage}`)
 
   const diagnostics = parse(output)
-  await mkdir(dirname(outputFile), { recursive: true })
-  await writeFile(outputFile, `${JSON.stringify(toCodeQuality(diagnostics, { prefix: values.prefix ?? '' }), null, 2)}\n`)
+  if (outputFile) {
+    await mkdir(dirname(outputFile), { recursive: true })
+    await writeFile(outputFile, `${JSON.stringify(toCodeQuality(diagnostics, { prefix }), null, 2)}\n`)
+  } else {
+    // GitHub hides these lines from the log: the readable output below stays
+    for (const annotation of toAnnotations(diagnostics, { prefix })) console.log(annotation)
+  }
 
   console.log(format(diagnostics))
   // Same as svelte-check: warnings alone don't fail

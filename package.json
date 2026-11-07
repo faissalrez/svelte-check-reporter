@@ -1,7 +1,7 @@
 {
   "name": "svelte-check-reporter",
   "version": "0.1.0",
-  "description": "Turn svelte-check output into a GitLab Code Quality report",
+  "description": "Turn svelte-check output into GitLab Code Quality reports and GitHub Actions annotations",
   "license": "MIT",
   "author": "Faissal Rezigui (https://github.com/faissalrez)",
   "repository": {
@@ -32,7 +32,10 @@
     "svelte",
     "svelte-check",
     "gitlab",
-    "code-quality"
+    "code-quality",
+    "github",
+    "github-actions",
+    "annotations"
   ],
   "devDependencies": {
     "@types/node": "^26.6.6",

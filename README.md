@@ -1,8 +1,10 @@
 # svelte-check-reporter
 
-Turns [svelte-check](https://www.npmjs.com/package/svelte-check) output into a
-[GitLab Code Quality](https://docs.gitlab.com/ci/testing/code_quality/) report, so
-type errors show up in merge requests.
+Turns [svelte-check](https://www.npmjs.com/package/svelte-check) output into CI
+reports, so type errors show up in merge requests and pull requests:
+
+- a [GitLab Code Quality](https://docs.gitlab.com/ci/testing/code_quality/) report;
+- [GitHub Actions annotations](https://docs.github.com/actions/reference/workflow-commands-for-github-actions).
 
 ## Usage
 
@@ -11,10 +13,14 @@ npm install --save-dev svelte-check-reporter
 ```
 
 ```sh
+# GitLab: writes the report to a file
 svelte-check --output machine-verbose | svelte-check-reporter --output-file gl-codequality.json
+
+# GitHub: prints the annotations to the log
+svelte-check --output machine-verbose | svelte-check-reporter --format github
 ```
 
-The command writes the report to `--output-file` and prints each problem to the log:
+Both also print each problem to the log:
 
 ```
 src/lib/db.ts:29:24  error  Property 'topology' does not exist on type 'MongoClient'.  (2339)
@@ -41,6 +47,27 @@ check:
 GitLab compares the report with the one of the target branch: the merge request
 shows the problems it adds and the ones it fixes.
 
+## GitHub Actions
+
+```yaml
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npx svelte-kit sync
+      - run: npx svelte-check --output machine-verbose | npx svelte-check-reporter --format github
+```
+
+Annotations show on the workflow run and on the lines of the pull request's diff.
+Unlike GitLab, GitHub doesn't compare them with the base branch: every problem is
+annotated, not only new ones. Run the command from the repository root, so that
+file paths match the repository.
+
 ## Compatibility
 
 | | Supported | Tested |
@@ -58,9 +85,9 @@ in the example above.
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `--output-file <path>` | required | Where to write the report. |
-| `--format <format>` | `gitlab` | Report format. Only `gitlab` for now. |
-| `--prefix <text>` | none | Text added before each description, for example `'[svelte-check] '`. GitLab doesn't show which tool found a problem: this tells svelte-check's problems apart from those of other tools, such as ESLint. |
+| `--format <format>` | `gitlab` | `gitlab` or `github`. |
+| `--output-file <path>` | required with `gitlab` | Where to write the GitLab report. Not used with `github`, whose annotations go to the log. |
+| `--prefix <text>` | none | Text added before each message, for example `'[svelte-check] '`. GitLab doesn't show which tool found a problem: this tells svelte-check's problems apart from those of other tools, such as ESLint. |
 
 ## Exit codes
 
@@ -70,7 +97,7 @@ in the example above.
 | `1` | svelte-check found errors. |
 | `2` | The input can't be used: nothing piped in, svelte-check didn't complete, or its output isn't `machine-verbose`. |
 
-## How problems are matched across pipelines
+## How GitLab matches problems across pipelines
 
 Each problem gets a fingerprint from its file, error code and message, without its
 line: a problem keeps its fingerprint when code above it moves. Identical problems

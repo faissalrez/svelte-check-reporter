@@ -68,6 +68,9 @@ Unlike GitLab, GitHub doesn't compare them with the base branch: every problem i
 annotated, not only new ones. Run the command from the repository root, so that
 file paths match the repository.
 
+GitHub shows at most 10 error annotations per step, in svelte-check's order: the
+log of the step still lists every problem.
+
 ## Compatibility
 
 | | Supported | Tested |
@@ -103,6 +106,12 @@ Each problem gets a fingerprint from its file, error code and message, without i
 line: a problem keeps its fingerprint when code above it moves. Identical problems
 in one file are told apart by their order. The prefix isn't part of the
 fingerprint, so adding or changing it doesn't mark problems as new.
+
+## Roadmap
+
+- GitHub annotations: annotate the files changed by the pull request first, so
+  that the 10 annotations GitHub shows go to the problems the pull request adds.
+- SARIF output, for GitHub code scanning.
 
 ## License
 

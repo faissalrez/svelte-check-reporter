@@ -13,7 +13,8 @@ async function main (): Promise<number> {
   const { values } = parseArgs({
     options: {
       format: { type: 'string', default: 'gitlab' },
-      'output-file': { type: 'string' }
+      'output-file': { type: 'string' },
+      prefix: { type: 'string', default: '' }
     }
   })
   if (values.format !== 'gitlab') throw new Error(`Unknown format "${values.format}". ${usage}`)
@@ -28,7 +29,7 @@ async function main (): Promise<number> {
 
   const diagnostics = parse(output)
   await mkdir(dirname(outputFile), { recursive: true })
-  await writeFile(outputFile, `${JSON.stringify(toCodeQuality(diagnostics), null, 2)}\n`)
+  await writeFile(outputFile, `${JSON.stringify(toCodeQuality(diagnostics, { prefix: values.prefix }), null, 2)}\n`)
 
   console.log(format(diagnostics))
   // Same as svelte-check: warnings alone don't fail

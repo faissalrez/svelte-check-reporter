@@ -51,4 +51,11 @@ describe('toCodeQuality', () => {
       expect(toCodeQuality([diagnostic(change)])[0].fingerprint).not.toBe(base.fingerprint)
     }
   })
+
+  it('prefixes the description without changing the fingerprint', () => {
+    const [plain] = toCodeQuality([diagnostic()])
+    const [prefixed] = toCodeQuality([diagnostic()], { prefix: '[svelte-check] ' })
+    expect(prefixed.description).toBe("[svelte-check] Property 'topology' does not exist on type 'MongoClient'.")
+    expect(prefixed.fingerprint).toBe(plain.fingerprint)
+  })
 })

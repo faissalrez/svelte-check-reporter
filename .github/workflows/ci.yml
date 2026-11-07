@@ -8,40 +8,35 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # vitest needs Node 22.12 or later
-        node: [22, 24]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - if: matrix.node == 24
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
 
-  # The package supports older Node versions than its tools: run the built
-  # command on them
+  # The package supports older Node versions than its tools (vitest needs Node
+  # 22.12): run the built command on each supported major
   runtime:
     needs: test
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ['18.3', 18, 20]
+        node: ['18.3', 18, 20, 22]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
       - run: test/smoke.sh

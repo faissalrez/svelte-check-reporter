@@ -41,6 +41,19 @@ check:
 GitLab compares the report with the one of the target branch: the merge request
 shows the problems it adds and the ones it fixes.
 
+## Compatibility
+
+| | Supported | Tested |
+| --- | --- | --- |
+| Node.js | 18.3 and later | 18.3, 18, 20, 22 and 24, in CI |
+| svelte-check | versions with `--output machine-verbose` | 4.7 |
+| Svelte | any version svelte-check checks | 5 |
+| SvelteKit | optional | 2 and 3 |
+
+The reporter only reads svelte-check's output: it doesn't depend on Svelte or
+SvelteKit. In a SvelteKit project, run `svelte-kit sync` before svelte-check, as
+in the example above.
+
 ## Options
 
 | Option | Default | Description |

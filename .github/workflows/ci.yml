@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # vitest needs Node 22.12 or later
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - if: matrix.node == 24
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+  # The package supports older Node versions than its tools: run the built
+  # command on them
+  runtime:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['18.3', 18, 20]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: test/smoke.sh

@@ -1,6 +1,6 @@
 {
   "name": "svelte-check-reporter",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Turn svelte-check output into a GitLab Code Quality report",
   "license": "MIT",
   "author": "Faissal Rezigui (https://github.com/faissalrez)",
@@ -20,7 +20,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=18.3"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

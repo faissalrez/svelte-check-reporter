@@ -19,6 +19,9 @@ This package reads its `machine-verbose` output and turns it into:
   for the workflow run and the diff.
 
 One command in your pipeline, no runtime dependencies, no token or app to set up.
+See it at work in the demo project's
+[pull requests on GitHub](https://github.com/faissalrez/svelte-check-reporter-demo/pulls)
+and [merge request on GitLab](https://gitlab.com/faissalrez/svelte-check-reporter-demo/-/merge_requests).
 
 ```sh
 npm install --save-dev svelte-check-reporter

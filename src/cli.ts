@@ -10,14 +10,16 @@ import { parse, type Diagnostic } from './parse.js'
 const usage = 'Usage: svelte-check --output machine-verbose | svelte-check-reporter --format gitlab --output-file gl-codequality.json'
 
 async function main (): Promise<number> {
+  // No `default` in these options: parseArgs only supports it from Node 18.11
   const { values } = parseArgs({
     options: {
-      format: { type: 'string', default: 'gitlab' },
+      format: { type: 'string' },
       'output-file': { type: 'string' },
-      prefix: { type: 'string', default: '' }
+      prefix: { type: 'string' }
     }
   })
-  if (values.format !== 'gitlab') throw new Error(`Unknown format "${values.format}". ${usage}`)
+  const reportFormat = values.format ?? 'gitlab'
+  if (reportFormat !== 'gitlab') throw new Error(`Unknown format "${reportFormat}". ${usage}`)
   const outputFile = values['output-file']
   if (!outputFile) throw new Error(`Missing --output-file. ${usage}`)
 
@@ -29,7 +31,7 @@ async function main (): Promise<number> {
 
   const diagnostics = parse(output)
   await mkdir(dirname(outputFile), { recursive: true })
-  await writeFile(outputFile, `${JSON.stringify(toCodeQuality(diagnostics, { prefix: values.prefix }), null, 2)}\n`)
+  await writeFile(outputFile, `${JSON.stringify(toCodeQuality(diagnostics, { prefix: values.prefix ?? '' }), null, 2)}\n`)
 
   console.log(format(diagnostics))
   // Same as svelte-check: warnings alone don't fail

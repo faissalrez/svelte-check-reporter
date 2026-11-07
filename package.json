@@ -1,0 +1,14 @@
+{
+  "name": "svelte-check-reporter",
+  "version": "0.0.0",
+  "description": "Turn svelte-check output into CI reports (GitLab Code Quality, SARIF)",
+  "type": "module",
+  "bin": {
+    "svelte-check-reporter": "./bin/svelte-check-reporter.js"
+  },
+  "files": ["bin", "src"],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": ["svelte", "svelte-check", "gitlab", "code-quality", "sarif"]
+}

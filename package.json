@@ -31,6 +31,9 @@
   "keywords": [
     "svelte",
     "svelte-check",
+    "sveltekit",
+    "typescript",
+    "ci",
     "gitlab",
     "code-quality",
     "github",

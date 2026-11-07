@@ -56,6 +56,14 @@ describe('svelte-check-reporter', () => {
   it('rejects --output-file with --format github', () => {
     const result = spawnSync('node', [cli, '--format', 'github', '--output-file', 'x.json'], { input: '', encoding: 'utf8' })
     expect(result.status).toBe(2)
-    expect(result.stderr).toContain('--output-file is only for --format gitlab')
+    expect(result.stderr).toContain("--output-file isn't used with --format github")
+  })
+
+  it('writes a SARIF log with --format sarif', () => {
+    const { status, outputFile } = run([start, error, completed].join('\n'), ['--format', 'sarif'])
+    expect(status).toBe(1)
+    const log = JSON.parse(readFileSync(outputFile, 'utf8'))
+    expect(log.version).toBe('2.1.0')
+    expect(log.runs[0].results[0]).toMatchObject({ ruleId: '2322', level: 'error', message: { text: 'Boom.' } })
   })
 })

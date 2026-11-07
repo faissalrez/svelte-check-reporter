@@ -7,9 +7,11 @@ import { parseArgs } from 'node:util'
 import { toAnnotations } from './github.js'
 import { toCodeQuality } from './gitlab.js'
 import { parse, type Diagnostic } from './parse.js'
+import { toSarif } from './sarif.js'
 
 const usage = 'Usage: svelte-check --output machine-verbose | svelte-check-reporter --format gitlab --output-file gl-codequality.json\n' +
-  '   or: svelte-check --output machine-verbose | svelte-check-reporter --format github'
+  '   or: svelte-check --output machine-verbose | svelte-check-reporter --format github\n' +
+  '   or: svelte-check --output machine-verbose | svelte-check-reporter --format sarif --output-file svelte-check.sarif'
 
 async function main (): Promise<number> {
   // No `default` in these options: parseArgs only supports it from Node 18.11
@@ -21,11 +23,11 @@ async function main (): Promise<number> {
     }
   })
   const reportFormat = values.format ?? 'gitlab'
-  if (reportFormat !== 'gitlab' && reportFormat !== 'github') throw new Error(`Unknown format "${reportFormat}". ${usage}`)
+  if (reportFormat !== 'gitlab' && reportFormat !== 'github' && reportFormat !== 'sarif') throw new Error(`Unknown format "${reportFormat}". ${usage}`)
   const outputFile = values['output-file']
-  // GitHub reads its annotations from the log: only GitLab's report goes to a file
-  if (reportFormat === 'gitlab' && !outputFile) throw new Error(`Missing --output-file. ${usage}`)
-  if (reportFormat === 'github' && outputFile) throw new Error(`--output-file is only for --format gitlab. ${usage}`)
+  // GitHub reads its annotations from the log: the other formats go to a file
+  if (reportFormat !== 'github' && !outputFile) throw new Error(`Missing --output-file. ${usage}`)
+  if (reportFormat === 'github' && outputFile) throw new Error(`--output-file isn't used with --format github. ${usage}`)
   const prefix = values.prefix ?? ''
 
   // Otherwise it would wait for keyboard input, and look stuck
@@ -37,7 +39,9 @@ async function main (): Promise<number> {
   const diagnostics = parse(output)
   if (outputFile) {
     await mkdir(dirname(outputFile), { recursive: true })
-    await writeFile(outputFile, `${JSON.stringify(toCodeQuality(diagnostics, { prefix }), null, 2)}\n`)
+    // GitHub shows the tool's name next to each problem: no need for the prefix in SARIF
+    const report = reportFormat === 'sarif' ? toSarif(diagnostics) : toCodeQuality(diagnostics, { prefix })
+    await writeFile(outputFile, `${JSON.stringify(report, null, 2)}\n`)
   } else {
     // GitHub hides these lines from the log: the readable output below stays
     for (const annotation of toAnnotations(diagnostics, { prefix })) console.log(annotation)

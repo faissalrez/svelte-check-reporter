@@ -4,7 +4,8 @@ Turns [svelte-check](https://www.npmjs.com/package/svelte-check) output into CI
 reports, so type errors show up in merge requests and pull requests:
 
 - a [GitLab Code Quality](https://docs.gitlab.com/ci/testing/code_quality/) report;
-- [GitHub Actions annotations](https://docs.github.com/actions/reference/workflow-commands-for-github-actions).
+- [GitHub Actions annotations](https://docs.github.com/actions/reference/workflow-commands-for-github-actions);
+- a [SARIF](https://docs.github.com/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning) log, for GitHub code scanning.
 
 ## Usage
 
@@ -16,11 +17,14 @@ npm install --save-dev svelte-check-reporter
 # GitLab: writes the report to a file
 svelte-check --output machine-verbose | svelte-check-reporter --output-file gl-codequality.json
 
-# GitHub: prints the annotations to the log
+# GitHub annotations: prints them to the log
 svelte-check --output machine-verbose | svelte-check-reporter --format github
+
+# GitHub code scanning: writes a SARIF log to a file
+svelte-check --output machine-verbose | svelte-check-reporter --format sarif --output-file svelte-check.sarif
 ```
 
-Both also print each problem to the log:
+All formats also print each problem to the log:
 
 ```
 src/lib/db.ts:29:24  error  Property 'topology' does not exist on type 'MongoClient'.  (2339)
@@ -71,6 +75,37 @@ file paths match the repository.
 GitHub shows at most 10 error annotations per step, in svelte-check's order: the
 log of the step still lists every problem.
 
+## GitHub code scanning
+
+```yaml
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      # Only needed in private repositories
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npx svelte-kit sync
+      - run: npx svelte-check --output machine-verbose | npx svelte-check-reporter --format sarif --output-file svelte-check.sarif
+      - uses: github/codeql-action/upload-sarif@v4
+        # Upload the report even when svelte-check finds errors
+        if: ${{ !cancelled() }}
+        with:
+          sarif_file: svelte-check.sarif
+          category: svelte-check
+```
+
+Code scanning compares the results with the base branch: pull requests show the
+problems they add, without GitHub's limit on annotations. It's available on public
+repositories, and on private ones with GitHub Code Security.
+
 ## Compatibility
 
 | | Supported | Tested |
@@ -88,9 +123,9 @@ in the example above.
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `--format <format>` | `gitlab` | `gitlab` or `github`. |
-| `--output-file <path>` | required with `gitlab` | Where to write the GitLab report. Not used with `github`, whose annotations go to the log. |
-| `--prefix <text>` | none | Text added before each message, for example `'[svelte-check] '`. GitLab doesn't show which tool found a problem: this tells svelte-check's problems apart from those of other tools, such as ESLint. |
+| `--format <format>` | `gitlab` | `gitlab`, `github` or `sarif`. |
+| `--output-file <path>` | required with `gitlab` and `sarif` | Where to write the report. Not used with `github`, whose annotations go to the log. |
+| `--prefix <text>` | none | Text added before each message, with `gitlab` and `github`, for example `'[svelte-check] '`. GitLab doesn't show which tool found a problem: this tells svelte-check's problems apart from those of other tools, such as ESLint. Code scanning shows the tool's name, so SARIF doesn't use it. |
 
 ## Exit codes
 
@@ -111,7 +146,6 @@ fingerprint, so adding or changing it doesn't mark problems as new.
 
 - GitHub annotations: annotate the files changed by the pull request first, so
   that the 10 annotations GitHub shows go to the problems the pull request adds.
-- SARIF output, for GitHub code scanning.
 
 ## License
 

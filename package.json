@@ -14,7 +14,7 @@
   },
   "type": "module",
   "bin": {
-    "svelte-check-reporter": "./dist/cli.js"
+    "svelte-check-reporter": "dist/cli.js"
   },
   "files": [
     "dist"

@@ -1,7 +1,7 @@
 {
   "name": "svelte-check-reporter",
   "version": "0.1.1",
-  "description": "Turn svelte-check output into GitLab Code Quality reports, GitHub Actions annotations and SARIF",
+  "description": "Show svelte-check's Svelte and TypeScript errors in GitHub pull requests and GitLab merge requests: Code Quality reports, Actions annotations and SARIF for code scanning",
   "license": "MIT",
   "author": "Faissal Rezigui (https://github.com/faissalrez)",
   "repository": {

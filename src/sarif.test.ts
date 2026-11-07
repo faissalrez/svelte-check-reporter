@@ -35,7 +35,7 @@ describe('toSarif', () => {
 
   it('converts a diagnostic, with 1-based positions', () => {
     expect(run([diagnostic()]).results).toEqual([{
-      ruleId: '2339',
+      ruleId: 'TS2339',
       ruleIndex: 0,
       level: 'error',
       message: { text: "Property 'topology' does not exist on type 'MongoClient'." },
@@ -50,10 +50,24 @@ describe('toSarif', () => {
 
   it('declares each rule once, with the descriptions GitHub requires', () => {
     const { tool, results } = run([diagnostic(), diagnostic(), diagnostic({ type: 'WARNING', code: undefined })])
-    expect(tool.driver.rules.map((rule) => rule.id)).toEqual(['2339', 'svelte-check'])
+    expect(tool.driver.rules.map((rule) => rule.id)).toEqual(['TS2339', 'svelte-check'])
     for (const rule of tool.driver.rules) {
       expect(rule.shortDescription.text && rule.fullDescription.text && rule.help.text).toBeTruthy()
     }
     expect(results.map((result) => [result.ruleIndex, result.level])).toEqual([[0, 'error'], [0, 'error'], [1, 'warning']])
+  })
+
+  it("names Svelte's rules after their code and links to their documentation", () => {
+    const { tool } = run([diagnostic({ type: 'WARNING', code: 'state_referenced_locally', source: 'svelte' })])
+    expect(tool.driver.rules[0]).toMatchObject({
+      id: 'state_referenced_locally',
+      helpUri: 'https://svelte.dev/docs/svelte/compiler-warnings#state_referenced_locally',
+      properties: { tags: ['svelte'] }
+    })
+  })
+
+  it('tags TypeScript rules', () => {
+    const { tool } = run([diagnostic()])
+    expect(tool.driver.rules[0]).toMatchObject({ id: 'TS2339', properties: { tags: ['typescript'] } })
   })
 })

@@ -7,6 +7,7 @@ import { parseArgs } from 'node:util'
 import { toAnnotations } from './github.js'
 import { toCodeQuality } from './gitlab.js'
 import { parse, type Diagnostic } from './parse.js'
+import { ruleName } from './rule.js'
 import { toSarif } from './sarif.js'
 
 const usage = 'Usage: svelte-check --output machine-verbose | svelte-check-reporter --format gitlab --output-file gl-codequality.json\n' +
@@ -55,7 +56,7 @@ async function main (): Promise<number> {
 function format (diagnostics: Diagnostic[]): string {
   const lines = diagnostics.map((d) => {
     const label = d.type === 'ERROR' ? 'error' : 'warn '
-    const code = d.code === undefined ? '' : `  ${d.source ?? ''}(${d.code})`
+    const code = d.code === undefined ? '' : `  ${ruleName(d)}`
     return `${d.filename}:${d.start.line + 1}:${d.start.character + 1}  ${label}  ${d.message}${code}`
   })
   const errors = diagnostics.filter((d) => d.type === 'ERROR').length

@@ -23,7 +23,7 @@ describe('svelte-check-reporter', () => {
   it('writes the report, prints the problems and exits with 1 on errors', () => {
     const { status, stdout, outputFile } = run([start, error, warning, completed].join('\n'), ['--prefix', '[svelte-check] '])
     expect(status).toBe(1)
-    expect(stdout).toContain('src/a.ts:1:5  error  Boom.  (2322)')
+    expect(stdout).toContain('src/a.ts:1:5  error  Boom.  TS2322')
     expect(stdout).toContain('1 error, 1 warning')
     const report = JSON.parse(readFileSync(outputFile, 'utf8'))
     expect(report.map((issue: { description: string }) => issue.description)).toEqual(['[svelte-check] Boom.', '[svelte-check] Careful.'])
@@ -48,7 +48,7 @@ describe('svelte-check-reporter', () => {
   it('prints GitHub annotations with --format github', () => {
     const result = spawnSync('node', [cli, '--format', 'github'], { input: [start, error, warning, completed].join('\n'), encoding: 'utf8' })
     expect(result.status).toBe(1)
-    expect(result.stdout).toContain('::error file=src/a.ts,line=1,col=5,endLine=1,endColumn=6,title=svelte-check(2322)::Boom.')
+    expect(result.stdout).toContain('::error file=src/a.ts,line=1,col=5,endLine=1,endColumn=6,title=svelte-check TS2322::Boom.')
     expect(result.stdout).toContain('::warning file=src/b.svelte,line=2,col=1,')
     expect(result.stdout).toContain('1 error, 1 warning')
   })
@@ -64,6 +64,6 @@ describe('svelte-check-reporter', () => {
     expect(status).toBe(1)
     const log = JSON.parse(readFileSync(outputFile, 'utf8'))
     expect(log.version).toBe('2.1.0')
-    expect(log.runs[0].results[0]).toMatchObject({ ruleId: '2322', level: 'error', message: { text: 'Boom.' } })
+    expect(log.runs[0].results[0]).toMatchObject({ ruleId: 'TS2322', level: 'error', message: { text: 'Boom.' } })
   })
 })

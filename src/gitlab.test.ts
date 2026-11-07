@@ -21,7 +21,7 @@ describe('toCodeQuality', () => {
     const [issue] = toCodeQuality([diagnostic()])
     expect(issue).toEqual({
       description: "Property 'topology' does not exist on type 'MongoClient'.",
-      check_name: 'ts(2339)',
+      check_name: 'TS2339',
       fingerprint: expect.stringMatching(/^[0-9a-f]{64}$/),
       severity: 'major',
       location: { path: 'src/lib/db.ts', lines: { begin: 29 } }

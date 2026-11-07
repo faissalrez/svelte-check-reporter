@@ -27,7 +27,7 @@ svelte-check --output machine-verbose | svelte-check-reporter --format sarif --o
 All formats also print each problem to the log:
 
 ```
-src/lib/db.ts:29:24  error  Property 'topology' does not exist on type 'MongoClient'.  (2339)
+src/lib/db.ts:29:24  error  Property 'topology' does not exist on type 'MongoClient'.  TS2339
 
 1 error, 0 warnings
 ```

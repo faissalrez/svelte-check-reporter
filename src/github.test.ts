@@ -18,7 +18,7 @@ function diagnostic (overrides: Partial<Diagnostic> = {}): Diagnostic {
 describe('toAnnotations', () => {
   it('converts an error, with 1-based positions', () => {
     expect(toAnnotations([diagnostic()])).toEqual([
-      "::error file=src/lib/db.ts,line=29,col=24,endLine=29,endColumn=32,title=svelte-check(2339)::Property 'topology' does not exist on type 'MongoClient'."
+      "::error file=src/lib/db.ts,line=29,col=24,endLine=29,endColumn=32,title=svelte-check TS2339::Property 'topology' does not exist on type 'MongoClient'."
     ])
   })
 

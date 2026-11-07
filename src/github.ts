@@ -1,4 +1,5 @@
 import type { Diagnostic } from './parse.js'
+import { ruleName } from './rule.js'
 
 /**
  * Converts svelte-check diagnostics to GitHub Actions workflow commands. Printed
@@ -15,7 +16,7 @@ export function toAnnotations (diagnostics: Diagnostic[], { prefix = '' }: { pre
       ['col', diagnostic.start.character + 1],
       ['endLine', diagnostic.end.line + 1],
       ['endColumn', diagnostic.end.character + 1],
-      ['title', diagnostic.code === undefined ? 'svelte-check' : `svelte-check(${diagnostic.code})`]
+      ['title', diagnostic.code === undefined ? 'svelte-check' : `svelte-check ${ruleName(diagnostic)}`]
     ].map(([key, value]) => `${key}=${escapeProperty(String(value))}`).join(',')
     const command = diagnostic.type === 'ERROR' ? 'error' : 'warning'
     return `::${command} ${properties}::${escapeData(`${prefix}${diagnostic.message}`)}`

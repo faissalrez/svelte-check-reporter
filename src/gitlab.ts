@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 
 import type { Diagnostic } from './parse.js'
+import { ruleName } from './rule.js'
 
 /** An issue of a GitLab Code Quality report (a subset of the Code Climate format). */
 export interface CodeQualityIssue {
@@ -28,7 +29,7 @@ export function toCodeQuality (diagnostics: Diagnostic[], { prefix = '' }: { pre
       // GitLab shows neither check_name nor engine_name: the description is the only
       // place to tell svelte-check's problems from other tools'
       description: `${prefix}${diagnostic.message}`,
-      check_name: checkName(diagnostic),
+      check_name: ruleName(diagnostic),
       fingerprint: createHash('sha256').update(`${key}#${rank}`).digest('hex'),
       severity: diagnostic.type === 'ERROR' ? 'major' : 'minor',
       // GitLab lines are 1-based, svelte-check's are 0-based
@@ -37,7 +38,3 @@ export function toCodeQuality (diagnostics: Diagnostic[], { prefix = '' }: { pre
   })
 }
 
-function checkName (diagnostic: Diagnostic): string {
-  const source = diagnostic.source ?? 'svelte-check'
-  return diagnostic.code === undefined ? source : `${source}(${diagnostic.code})`
-}

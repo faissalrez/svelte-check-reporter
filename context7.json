@@ -1,0 +1,16 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "svelte-check-reporter",
+  "description": "Converts svelte-check output into GitLab Code Quality reports, GitHub Actions annotations and SARIF for GitHub code scanning",
+  "folders": [],
+  "excludeFolders": ["src", "test", "dist", "docs"],
+  "rules": [
+    "Pipe svelte-check with `--output machine-verbose` into the reporter: `svelte-check --output machine-verbose | svelte-check-reporter ...`. Other svelte-check output modes are rejected.",
+    "`--output-file <path>` is required with `--format gitlab` (the default) and `--format sarif`, and not allowed with `--format github`, which prints annotations to the log.",
+    "On GitHub, use either `--format github` (annotations) or `--format sarif` (code scanning), not both: each problem would show twice.",
+    "For GitLab, declare the file under `artifacts: reports: codequality` with `when: always`, and run the job on the target branch too, so GitLab can compare reports.",
+    "For code scanning, upload the SARIF file with `github/codeql-action/upload-sarif` under `if: ${{ !cancelled() }}`, give the job `security-events: write`, and also run it on pushes to the default branch.",
+    "In SvelteKit projects, run `svelte-kit sync` before svelte-check, and run the command from the repository root so file paths match.",
+    "Exit codes: 0 no errors (warnings alone pass), 1 svelte-check errors, 2 unusable input or options."
+  ]
+}

@@ -214,7 +214,7 @@ src/lib/db.ts:29:24  error  Property 'topology' does not exist on type 'MongoCli
 1 error, 0 warnings
 ```
 
-Errors fail the command. Warnings alone don't.
+Errors fail the command. Warnings alone don't. The reporter's exit code decides the job's result, so svelte-check's `--fail-on-warnings` has no effect through the pipe.
 
 | Exit code | Meaning |
 | --- | --- |

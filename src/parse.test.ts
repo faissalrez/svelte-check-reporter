@@ -33,6 +33,11 @@ describe('parse', () => {
     ])
   })
 
+  it('reads Windows line endings', () => {
+    const output = '0 START "/project"\r\n1 {"type":"ERROR","filename":"a.ts","start":{"line":0,"character":0},"end":{"line":0,"character":1},"message":"m"}\r\n2 COMPLETED 1 FILES 1 ERRORS 0 WARNINGS 1 FILES_WITH_PROBLEMS\r\n'
+    expect(parse(output)).toHaveLength(1)
+  })
+
   it.each([
     ['a missing field', '1 {"type":"ERROR","start":{"line":0,"character":0},"message":"m"}'],
     ['an unknown type', '1 {"type":"HINT","filename":"a.ts","start":{"line":0,"character":0},"message":"m"}'],

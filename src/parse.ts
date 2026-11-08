@@ -16,7 +16,8 @@ export interface Diagnostic {
  */
 export function parse (output: string): Diagnostic[] {
   const diagnostics: Diagnostic[] = []
-  output.split('\n').forEach((line, index) => {
+  // CRLF too: Windows PowerShell 5.1 rewrites piped lines, and a skipped line would hide its problem
+  output.split(/\r?\n/).forEach((line, index) => {
     const json = line.match(/^\d+ (\{.*)$/)?.[1]
     if (!json) return
     let diagnostic: Partial<Diagnostic>
